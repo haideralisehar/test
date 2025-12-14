@@ -334,7 +334,10 @@
 export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
-import { chromium } from "playwright";
+import { chromium as playwrightChromium } from "playwright-core";
+import lambdaChromium from "@sparticuz/chromium";
+
+const isVercel = !!process.env.VERCEL;
 
 export async function POST(req) {
   try {
@@ -349,18 +352,15 @@ export async function POST(req) {
       reminders,
     } = payload;
 
-    // -------------------------------
-    // HTML (UNCHANGED)
-    // -------------------------------
-    const html = `
+        const html = `
 <!DOCTYPE html>
 <html>
 <head>
   <style>
   body{
-    font-family: Arial, sans-serif;
+  font-family: Arial, sans-serif
   }
-
+  
 .company-logo{
     background-color: rgb(28, 28, 173);
     padding: 30px 10px;
@@ -369,12 +369,15 @@ export async function POST(req) {
 
 /* Main Container */
 .voucher-wrapper {
+  // max-width: 900px;
   width: 100%;
   height:auto;
   margin: 0 auto;
   background: #fff;
   padding: 25px;
+
   color: #000;
+  // border: 1px solid #dcdcdc;
   box-sizing: border-box;
 }
 
@@ -495,33 +498,60 @@ export async function POST(req) {
   font-size: 14px;
 }
 
-/* -------- RESPONSIVE -------- */
+/* -------- RESPONSIVE BREAKPOINTS -------- */
+
+/* Tablets */
 @media (max-width: 768px) {
-  .voucher-wrapper { padding: 15px; }
-  .voucher-header { flex-direction: column; text-align: center; }
-  .voucher-title { font-size: 20px; }
+  .voucher-wrapper {
+    padding: 15px;
+  }
+
+  .voucher-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .voucher-title {
+    font-size: 20px;
+  }
 }
 
+/* Mobile */
 @media (max-width: 480px) {
-  .voucher-wrapper { padding: 12px; }
-  .voucher-title { font-size: 18px; }
+  .voucher-wrapper {
+    padding: 12px;
+  }
+
+  .voucher-title {
+    font-size: 18px;
+  }
+
   .company-info p,
   .hotel-info p,
   .customer-requests p,
-  .reminder-section li { font-size: 13px; }
-  .order-grid div { min-width: 100%; }
+  .reminder-section li {
+    font-size: 13px;
+  }
+
+  .order-grid div {
+    min-width: 100%;
+  }
+
   .order-table th,
-  .order-table td { font-size: 12px; padding: 6px; }
+  .order-table td {
+    font-size: 12px;
+    padding: 6px;
+  }
 }
+
   </style>
 </head>
-
 <body>
 <div class="voucher-wrapper">
 
   <div class="voucher-header">
     <div class="company-logo">
-      <img src="https://cityin.net/uploads/travel-images/settings-files/0487a1c52501fbaa20b0907990e2f3c1.png" />
+      <img src="https://cityin.net/uploads/travel-images/settings-files/0487a1c52501fbaa20b0907990e2f3c1.png" width="120" />
     </div>
     <div class="company-info">
       <p><strong>Company Name:</strong> ${company.name}</p>
@@ -537,7 +567,7 @@ export async function POST(req) {
   <div class="section">
     <div class="section-heading">Hotel Information</div>
     <div class="hotel-info">
-      <p><strong>${hotel.name}</strong></p>
+      <p class="hotel-name"><strong>${hotel.name}</strong></p>
       <p><strong>Tel.</strong> ${hotel.phone}</p>
       <p><strong>Ads.</strong> ${hotel.address}</p>
     </div>
@@ -562,62 +592,72 @@ export async function POST(req) {
     </div>
 
     <div class="order-table-wrapper">
-      <table class="order-table">
-        <thead>
-          <tr>
-            <th>Unit</th>
-            <th>Room Type / Bed Type</th>
-            <th>Guests</th>
-            <th>Number</th>
-            <th>Meal Type</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${tableRows.map(
+    <table class="order-table">
+      <thead>
+        <tr>
+          <th>Unit</th>
+          <th>Room Type / Bed Type</th>
+          <th>Guests</th>
+          <th>Number</th>
+          <th>Meal Type</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${tableRows
+          .map(
             (row, index) => `
-            <tr>
-              <td>${index + 1}</td>
-              <td>${row.roomType}<br>${row.bedType}</td>
-              <td>${row.guestName}</td>
-              <td>${row.adults} adult(s)</td>
-              <td>${row.mealType}</td>
-            </tr>
-          `
-          ).join("")}
-        </tbody>
-      </table>
+          <tr>
+            <td>${index + 1}</td>
+            <td>${row.roomType}<br>${row.bedType}</td>
+            <td>${row.guestName}</td>
+            <td>${row.adults} adult(s)</td>
+            <td>${row.mealType}</td>
+          </tr>
+        `
+          )
+          .join("")}
+      </tbody>
+    </table>
     </div>
 
     <div class="customer-requests">
       <p><strong>* Customer Requests</strong></p>
       ${customer.requests.map((r) => `<p>${r}</p>`).join("")}
-      <p>The remarks are for reference only.</p>
+      <p class="note">The remarks for the establishment are for reference only. We cannot guarantee them.</p>
     </div>
   </div>
 
   <div class="section reminder-section">
-    <p><strong>Reminder:</strong></p>
+    <p class="reminder-title"><strong>Reminder:</strong></p>
     <ol>
       ${reminders.map((r) => `<li>${r}</li>`).join("")}
     </ol>
   </div>
-
 </div>
 </body>
 </html>
 `;
 
     // -------------------------------
-    // PLAYWRIGHT PDF
+    // Launch Browser (ENV AWARE)
     // -------------------------------
-    const browser = await chromium.launch({
-  headless: true,
-  args: ["--no-sandbox", "--disable-setuid-sandbox"],
-});
+    const browser = await playwrightChromium.launch(
+      isVercel
+        ? {
+            args: lambdaChromium.args,
+            executablePath: await lambdaChromium.executablePath(),
+            headless: lambdaChromium.headless,
+          }
+        : {
+            headless: true, // Local Playwright browser
+          }
+    );
 
     const page = await browser.newPage();
 
-    await page.setContent(html, { waitUntil: "networkidle" });
+    await page.setContent(html, {
+      waitUntil: "networkidle",
+    });
 
     const pdfBuffer = await page.pdf({
       format: "A4",
@@ -627,10 +667,10 @@ export async function POST(req) {
     await browser.close();
 
     return NextResponse.json({
-      success: true,
-      html,
-      pdf: Buffer.from(pdfBuffer).toString("base64"),
-    });
+  success: true,
+  html,
+  pdf: Buffer.from(pdfBuffer).toString("base64"),
+});
   } catch (err) {
     console.error("VOUCHER ERROR:", err);
     return NextResponse.json(
