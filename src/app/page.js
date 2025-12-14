@@ -8,7 +8,7 @@ export default function Page() {
       <DownloadBtn
         booking={{
           reference: "15262220160",
-          guestName: ["Jalal Saleh", "Jalal Saleh"],
+          guestName: ["Haider Ali", "Jalal Saleh"],
           guestEmail: "jalal@example.com",
           guestPhone: "+92 345773783",
           hotelName: "Zedwell Piccadilly Circus",
