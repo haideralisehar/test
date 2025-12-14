@@ -1,0 +1,123 @@
+.page-container {
+  font-family: "Poppins", sans-serif;
+  overflow-x: hidden;
+}
+
+/* Intro Section */
+.intro {
+  text-align: center;
+  padding: 80px 20px;
+  background: #f9fafb;
+  animation: fadeIn 1s ease-in-out;
+}
+.intro h1 {
+  font-size: 2.8rem;
+  font-weight: 600;
+  color: #111;
+}
+.intro p {
+  color: #555;
+  font-size: 1.1rem;
+  margin-top: 10px;
+}
+
+/* Horizontal Scroll Section */
+.horizontal-scroll {
+  width: 100%;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  display: flex;
+  align-items: center;
+  background: #fafafa;
+  padding: 40px 0;
+}
+
+.scroll-inner {
+  display: flex;
+  gap: 40px;
+  padding: 0 40px;
+}
+
+.scroll-card {
+  scroll-snap-align: start;
+  min-width: 70vw;
+  height: 60vh;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  animation: slideUp 0.8s ease-in-out;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+.scroll-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+}
+
+.scroll-card h2 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  color: #222;
+}
+.scroll-card p {
+  font-size: 1.1rem;
+  color: #444;
+}
+
+/* Final Content Section */
+.content {
+  background: white;
+  padding: 60px 20px;
+  text-align: center;
+  animation: fadeIn 1s ease-in;
+}
+.content h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+.content ul {
+  list-style-type: disc;
+  margin: 0 auto;
+  max-width: 600px;
+  text-align: left;
+}
+.content li {
+  margin: 10px 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+/* Animations */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Scrollbar */
+.horizontal-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+.horizontal-scroll::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+.horizontal-scroll::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
