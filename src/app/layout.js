@@ -11,10 +11,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        <title>voucher</title>
+        <title>My Resume</title>
         <meta
           name="description"
-          content="This is my awesome Next.js application"
+          content="This is my awesome Resume"
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
